@@ -25,6 +25,8 @@ st.set_page_config(
 # =========================================================
 # DnCNN MODEL
 # =========================================================
+from tensorflow.keras.layers import Lambda
+
 def build_dncnn(depth=17, filters=64):
     inp = Input(shape=(IMAGE_SIZE, IMAGE_SIZE, CHANNELS))
 
@@ -37,9 +39,14 @@ def build_dncnn(depth=17, filters=64):
         x = ReLU()(x)
 
     noise = Conv2D(1, 3, padding="same")(x)
-    model = Model(inp, noise)
+
+    # Explicit connection for Keras 3 compatibility
+    out = Lambda(lambda z: z)(noise)
+
+    model = Model(inputs=inp, outputs=out)
     model.compile(optimizer=Adam(1e-3), loss="mse")
     return model
+
 
 # =========================================================
 # IMAGE PROCESSING
